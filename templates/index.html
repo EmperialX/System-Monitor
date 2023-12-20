@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Metrics Dashboard</title>
+</head>
+<body>
+    <h1>System Metrics Dashboard</h1>
+    <ul id="systemMetricsList"></ul>
+    <div id="cameraImageContainer">
+        <h2>Camera Image</h2>
+        <img id="cameraImage" alt="Camera Image">
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const socket = io.connect('http://' + document.domain + ':' + location.port);
+            socket.on('data', function (data) {
+                updateSystemMetrics(data);
+                updateCameraImage(data);
+            });
+            function updateSystemMetrics(data) {
+                const systemMetricsList = document.getElementById('systemMetricsList');
+                systemMetricsList.innerHTML = '';
+                for (const [key, value] of Object.entries(data)) {
+                    const listItem = document.createElement('li');
+                    listItem.innerText = `${key}: ${value}`;
+                    systemMetricsList.appendChild(listItem);
+                }
+            }
+            function updateCameraImage(data) {
+                const cameraImage = document.getElementById('cameraImage');
+                if (data.camera_photo) {
+                    const blob = new Blob([new Uint8Array(data.camera_photo)], { type: 'image/jpeg' });
+                    const imageUrl = URL.createObjectURL(blob);
+                    cameraImage.src = imageUrl;
+                } else {
+                    cameraImage.src = '';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
